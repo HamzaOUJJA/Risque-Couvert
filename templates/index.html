@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risque Couvert - Analysis Tool</title>
+    <!-- TailwindCSS for quick, premium styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-gray-100 min-h-screen flex items-center justify-center relative overflow-hidden">
+
+    <!-- Decorative background blobs -->
+    <div
+        class="absolute top-0 left-0 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob">
+    </div>
+    <div
+        class="absolute top-0 right-0 w-96 h-96 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000">
+    </div>
+
+    <div class="w-full max-w-md p-8 rounded-2xl glass shadow-2xl relative z-10">
+        <div class="mb-8 text-center">
+            <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
+                Risque Analytics</h1>
+            <p class="text-gray-400 mt-2">Select your analysis period</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="mb-4">
+            {% for category, message in messages %}
+            <div class="p-3 rounded bg-red-500 bg-opacity-20 text-red-200 text-sm border border-red-500">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <form action="/visualize" method="POST" class="space-y-6">
+            <div>
+                <label for="start_date" class="block text-sm font-medium text-gray-300 mb-2">Start Date</label>
+                <input type="date" id="start_date" name="start_date" required
+                    class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-white">
+            </div>
+
+            <div>
+                <label for="end_date" class="block text-sm font-medium text-gray-300 mb-2">End Date</label>
+                <input type="date" id="end_date" name="end_date" required
+                    class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-white">
+            </div>
+
+            <button type="submit"
+                class="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-bold text-white shadow-lg transform hover:scale-[1.02] transition-all duration-200 hover:shadow-blue-500/25">
+                Generate Analysis
+            </button>
+        </form>
+    </div>
+
+</body>
+
+</html>
