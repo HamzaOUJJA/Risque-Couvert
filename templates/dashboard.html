@@ -1,98 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "layout.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Analyse des Spreads</title>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            background-color: #0f172a;
-            color: white;
+{% block title %}Dashboard - {{ start }} au {{ end }}{% endblock %}
+
+{% block content %}
+{% include "partials/_tables.html" %}
+
+{% include "partials/_charts.html" %}
+
+{% include "partials/_spreads.html" %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Injected Flask Data
+    const tcdData = {{ tcd_json | safe }};
+    window.globalSpreadData = {{ df_json | safe }};
+
+
+    Object.keys(tcdData).forEach(key => {
+            // Parse the string into an object
+            const parsed = JSON.parse(tcdData[key]);
+            
+            console.log(`--- Structure for ${key} ---`);
+            console.log("Index (Rows):", parsed.index);
+            console.log("Columns:", parsed.columns);
+            
+            // This prints the numerical data as a table in your F12 console
+            console.table(parsed.data); 
+        });
+        
+    window.onload = () => {
+        // CHANGE THIS: Match the function name in charts.js
+        if (typeof tcdData !== 'undefined') {
+            renderAgMultiDonut(tcdData);
         }
 
-        .glass {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        if (typeof window.globalSpreadData !== 'undefined') {
+            initSpreadUI(window.globalSpreadData);
         }
-    </style>
-</head>
-
-<body class="p-8">
-    <div class="max-w-7xl mx-auto">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
-                Visualisation des Courbes de Spreads
-            </h1>
-            <a href="/" class="bg-gray-800 px-4 py-2 rounded-lg hover:bg-gray-700">Nouvelle Analyse</a>
-        </div>
-
-        <div class="glass p-6 rounded-2xl mb-8 flex flex-wrap gap-6">
-            <div class="flex-1 min-w-[200px]">
-                <label class="block text-sm text-gray-400 mb-2">Choisir le Produit</label>
-                <select id="prodSelect" onchange="updateChart()"
-                    class="w-full bg-slate-800 border border-slate-700 p-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
-                    {% for p in prods %} <option value="{{p}}">{{p}}</option> {% endfor %}
-                </select>
-            </div>
-            <div class="flex-1 min-w-[200px]">
-                <label class="block text-sm text-gray-400 mb-2">Choisir le Type de Spread</label>
-                <select id="spreadSelect" onchange="updateChart()"
-                    class="w-full bg-slate-800 border border-slate-700 p-2 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
-                    {% for col in spread_cols %} <option value="{{col}}">{{col}}</option> {% endfor %}
-                </select>
-            </div>
-        </div>
-
-        <div class="glass p-4 rounded-2xl shadow-2xl">
-            <div id="mainChart" style="height: 600px;"></div>
-        </div>
-    </div>
-
-    <script>
-        // On récupère les données envoyées par Flask
-        const rawData = {{ df_json | safe }};
-
-        function updateChart() {
-            const selectedProd = document.getElementById('prodSelect').value;
-            const selectedSpread = document.getElementById('spreadSelect').value;
-
-            // Filtrer les données pour le produit sélectionné
-            const filteredData = rawData.filter(d => d.Prod === selectedProd);
-
-            // Grouper par date pour superposer les courbes
-            const dates = [...new Set(filteredData.map(d => d.Dates))];
-
-            const traces = dates.map(date => {
-                const datePoints = filteredData.filter(d => d.Dates === date);
-                return {
-                    x: datePoints.map(d => d.Maturite),
-                    y: datePoints.map(d => d[selectedSpread]),
-                    mode: 'lines+markers',
-                    name: date, // La légende affichera la date
-                    line: { shape: 'spline' } // Pour une courbe plus lisse
-                };
-            });
-
-            const layout = {
-                title: `Analyse du Spread: ${selectedSpread} (${selectedProd})`,
-                paper_bgcolor: 'rgba(0,0,0,0)',
-                plot_bgcolor: 'rgba(0,0,0,0)',
-                font: { color: '#cbd5e1' },
-                xaxis: { title: 'Maturité (Ténor)', gridcolor: '#334155' },
-                yaxis: { title: selectedSpread, gridcolor: '#334155' },
-                hovermode: 'x unified',
-                legend: { orientation: 'h', y: -0.2 }
-            };
-
-            Plotly.newPlot('mainChart', traces, layout, { responsive: true });
-        }
-
-        // Initialisation au chargement
-        updateChart();
-    </script>
-</body>
-
-</html>
+    };
+</script>
+{% endblock %}

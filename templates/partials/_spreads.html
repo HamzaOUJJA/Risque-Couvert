@@ -1,0 +1,29 @@
+<div class="space-y-10">
+    <h2 class="text-2xl font-bold text-green-400 border-b border-gray-800 pb-2">
+        3. Courbes MKD Spreads
+    </h2>
+
+    <div class="glass p-6 rounded-2xl">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+
+            <div>
+                <label class="block text-sm text-gray-400 mb-2">Indicateur (Y)</label>
+                <select id="spreadSelect" onchange="updateSpreadChart(window.globalSpreadData)"
+                    class="w-full bg-slate-800 border border-slate-700 p-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-white">
+                    {% for col in spread_cols %}
+                    <option value="{{col}}">{{col}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="md:col-span-2">
+                <label class="block text-sm text-gray-400 mb-2">Sélection des périmètres (Produit | Date)</label>
+                <div id="filterContainer" class="flex flex-wrap gap-2">
+                </div>
+            </div>
+
+        </div>
+
+        <div id="mainChart" style="height: 550px;" class="rounded-xl overflow-hidden mt-8"></div>
+    </div>
+</div>
