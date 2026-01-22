@@ -3,22 +3,20 @@ import plotly
 import plotly.express as px
 import json
 import numpy as np
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, Response, stream_with_context
 from datetime import datetime
+from flask import Response, stream_with_context, request
 import os
 import sys
+import time
 
 # Ajout du dossier courant pour les imports
 sys.path.append(os.getcwd())
 
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
+from Risque_Couvert import Risque_Couvert
 
-# Importation de votre fonction
-try:
-    from Risque_Couvert import Risque_Couvert
-except ImportError:
-    print("Attention: Risque_Couvert.py introuvable.")
 
 @app.route('/', methods=['GET'])
 def index():
@@ -30,9 +28,9 @@ def visualize():
     start_date_str = request.form.get('start_date')
     end_date_str = request.form.get('end_date')
     
-    if not start_date_str or not end_date_str:
-        flash("Veuillez entrer les deux dates.", "error")
-        return redirect(url_for('index'))
+    # if not start_date_str or not end_date_str:
+    #     flash("Veuillez entrer les deux dates.", "error")
+    #     return redirect(url_for('index'))
 
     # 2. Conversion au format dd/mm/yyyy pour votre fonction Risque_Couvert
     try:
@@ -79,5 +77,45 @@ def visualize():
                            start=fmt_start, 
                            end=fmt_end)
 
+
+
+
+
+
+@app.route('/stream-steps')
+def stream_steps():
+    # On récupère les dates pour confirmer le lancement
+    start = request.args.get('start_date', 'N/A')
+    end = request.args.get('end_date', 'N/A')
+
+    def generate():
+        # Liste des étapes réelles de votre fonction Risque_Couvert
+        etapes = [
+            f"Analyse du Risque Couvert...",
+            "Etape 01 : Traitement des MKD_Spreads...",
+            "Etape 02 : Pivotement du All_MKD_Spreads...",
+            "Etape 03 : Chargement de DETAIL_POUR_DRM...",
+            "Etape 04 : Construction du Perimetre_and_Whopper...",
+            "Etape 05 : GroupBy sur Perimetre_and_Whopper...",
+            "Etape 06 : Construction de DETAIL_POUR_COMPTA...",
+            "Etape 07 : Calcul de Whopper_explain...",
+            "Etape 08 : GroupBy sur Whopper_explain...",
+            "Etape 09 : Calcul de Comparaison_Explain...",
+            "Etape 10 : Calcul des TCDs finaux...",
+            "Etape 11 : Finalisation des graphiques..."
+        ]
+
+        for etape in etapes:
+            time.sleep(2)  # On laisse le temps à l'utilisateur de lire
+            yield f"data: {etape}\n\n"
+        
+        time.sleep(2)
+        # Message CRITIQUE pour que le JavaScript sache qu'il faut rediriger
+        yield "data: FINISH\n\n"
+
+    return Response(stream_with_context(generate()), mimetype='text/event-stream')
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    # threaded=True est crucial pour que le streaming fonctionne
+    app.run(debug=True, threaded=True)
